@@ -108,7 +108,7 @@ tasks.named('javadoc', Javadoc).configure {
 }
 
 def copyLibsForEclipse = tasks.register('copyLibsForEclipse', Copy) {
-    from (configurations.runtimeClasspath) {
+    from (configurations.compileClasspath) {
       include "*.jar"
       exclude "Saxon*.jar"
     }
@@ -162,7 +162,7 @@ def updateManifest = tasks.register('updateManifest') {
 tasks.named('compileJava').configure { dependsOn ':spotbugs:jar' }
 
 // create manifest when importing to eclipse
-tasks.named('eclipse').configure { dependsOn copyLibsForEclipse, updateManifest }
+tasks.named('eclipse').configure { dependsOn copyLibsForEclipse, updateManifest, "unzipPdeTool" }
 
 class FileRef implements org.gradle.plugins.ide.eclipse.model.FileReference {
     def file;
