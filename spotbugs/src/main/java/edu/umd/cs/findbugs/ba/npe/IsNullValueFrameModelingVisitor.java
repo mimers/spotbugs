@@ -22,6 +22,8 @@ package edu.umd.cs.findbugs.ba.npe;
 import java.util.Map;
 import java.util.Set;
 
+import edu.umd.cs.findbugs.ba.*;
+import edu.umd.cs.findbugs.classfile.MethodDescriptor;
 import org.apache.bcel.generic.ACONST_NULL;
 import org.apache.bcel.generic.ANEWARRAY;
 import org.apache.bcel.generic.CHECKCAST;
@@ -46,16 +48,6 @@ import org.apache.bcel.generic.Type;
 
 import edu.umd.cs.findbugs.OpcodeStack.Item;
 import edu.umd.cs.findbugs.SystemProperties;
-import edu.umd.cs.findbugs.ba.AbstractFrameModelingVisitor;
-import edu.umd.cs.findbugs.ba.AnalysisContext;
-import edu.umd.cs.findbugs.ba.AssertionMethods;
-import edu.umd.cs.findbugs.ba.DataflowAnalysisException;
-import edu.umd.cs.findbugs.ba.Hierarchy2;
-import edu.umd.cs.findbugs.ba.Location;
-import edu.umd.cs.findbugs.ba.NullnessAnnotation;
-import edu.umd.cs.findbugs.ba.XFactory;
-import edu.umd.cs.findbugs.ba.XField;
-import edu.umd.cs.findbugs.ba.XMethod;
 import edu.umd.cs.findbugs.ba.deref.UnconditionalValueDerefAnalysis;
 import edu.umd.cs.findbugs.ba.type.TypeDataflow;
 import edu.umd.cs.findbugs.ba.type.TypeFrame;
@@ -277,6 +269,17 @@ public class IsNullValueFrameModelingVisitor extends AbstractFrameModelingVisito
             pushValue = IsNullValue.nonNullValue().markInformationAsComingFromReturnValueOfMethod(calledMethod);
 
         } else {
+            MethodDescriptor accessMethod = calledMethod.getAccessMethodForMethod();
+            if (accessMethod != null) {
+                XClass accessClass = AnalysisContext.currentXFactory().getXClass(accessMethod.getClassDescriptor());
+                if (accessClass != null) {
+                    XMethod accessMethodInfo = accessClass.findMethod(accessMethod);
+                    if (accessMethodInfo != null) {
+                        pushValue = getReturnValueNullness(accessMethodInfo);
+                        return pushValue;
+                    }
+                }
+            }
             pushValue = IsNullValue.nonReportingNotNullValue();
         }
         return pushValue;
