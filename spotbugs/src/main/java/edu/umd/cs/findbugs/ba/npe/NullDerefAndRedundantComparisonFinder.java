@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import edu.umd.cs.findbugs.MethodAnnotation;
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.CodeException;
 import org.apache.bcel.classfile.LineNumberTable;
@@ -66,6 +67,7 @@ import edu.umd.cs.findbugs.ba.vna.ValueNumberSourceInfo;
 import edu.umd.cs.findbugs.classfile.CheckedAnalysisException;
 import edu.umd.cs.findbugs.classfile.Global;
 import edu.umd.cs.findbugs.log.Profiler;
+import org.apache.bcel.generic.InvokeInstruction;
 
 /**
  * A user-friendly front end for finding null pointer dereferences and redundant
@@ -323,6 +325,14 @@ public class NullDerefAndRedundantComparisonFinder {
                         variableAnnotation = ValueNumberSourceInfo.findAnnotationFromValueNumber(method, loc, valueNumber,
                                 vnaDataflow.getFactAtLocation(loc), "VALUE_OF");
                         if (variableAnnotation != null) {
+                            break;
+                        }
+                        Instruction instruction = loc.getHandle().getInstruction();
+                        if (instruction instanceof InvokeInstruction) {
+                            String className = ((InvokeInstruction) instruction).getClassName(classContext.getConstantPoolGen());
+                            String methodName = ((InvokeInstruction) instruction).getMethodName(classContext.getConstantPoolGen());
+                            String methodSig = ((InvokeInstruction) instruction).getSignature(classContext.getConstantPoolGen());
+                            variableAnnotation = MethodAnnotation.fromCalledMethod(className, methodName, methodSig, false);
                             break;
                         }
                     }
