@@ -24,6 +24,10 @@ import static java.util.Objects.requireNonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -31,10 +35,16 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
+import edu.umd.cs.findbugs.util.Util;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
@@ -71,6 +81,9 @@ import edu.umd.cs.findbugs.internalAnnotations.DottedClassName;
 import edu.umd.cs.findbugs.io.IO;
 import edu.umd.cs.findbugs.util.ClassName;
 import net.jcip.annotations.NotThreadSafe;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * A context for analysis of a complete project. This serves as the repository
@@ -1006,8 +1019,52 @@ public class AnalysisContext implements AutoCloseable {
         if (pass == 0) {
             getCheckReturnAnnotationDatabase().loadAuxiliaryAnnotations();
             getNullnessAnnotationDatabase().loadAuxiliaryAnnotations();
+            loadExternalAnnotations();
         }
 
+    }
+
+    private void loadExternalAnnotations() {
+        Set<Map.Entry<String, Boolean>> annotationFiles = project.getConfiguration().getExternalAnnotationFiles().entrySet();
+        IllegalArgumentException deferredError = null;
+        for (Map.Entry<String, Boolean> entry : annotationFiles) {
+            if (entry.getValue() == null || !entry.getValue()) {
+                continue;
+            }
+            String annotationFile = entry.getKey();
+            try {
+                loadXMLAnnotations(annotationFile);
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                String message = "Unable to read external annotation: " + annotationFile + " : " + e.getMessage();
+                logError(message, e);
+                if (deferredError == null) {
+                    deferredError = new IllegalArgumentException(message, e);
+                }
+            }
+        }
+        if (deferredError != null) {
+            throw deferredError;
+        }
+    }
+
+    private void loadXMLAnnotations(String fileName) throws IOException, SAXException, ParserConfigurationException {
+        Path path = FileSystems.getDefault().getPath(fileName);
+        InputStream stream = Files.newInputStream(path);
+        try {
+            SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+            parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+            parserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", Boolean.TRUE);
+            parserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", Boolean.FALSE);
+            parserFactory.setFeature("http://xml.org/sax/features/external-general-entities", Boolean.FALSE);
+            parserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", Boolean.FALSE);
+            SAXParser parser = parserFactory.newSAXParser();
+            XMLReader xr = parser.getXMLReader();
+            Reader reader = Util.getReader(stream);
+            xr.setContentHandler(new XMLAnnotationHandler(getNullnessAnnotationDatabase(), getCheckReturnAnnotationDatabase()));
+            xr.parse(new InputSource(reader));
+        } finally {
+            Util.closeSilently(stream);
+        }
     }
 
     /**

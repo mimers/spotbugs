@@ -126,6 +126,8 @@ public class UserPreferences implements Cloneable {
 
     private Map<String, Boolean> excludeBugsFiles;
 
+    private Map<String, Boolean> externalAnnotationFiles;
+
     private Map<String, Boolean> customPlugins;
 
     private UserPreferences() {
@@ -137,6 +139,7 @@ public class UserPreferences implements Cloneable {
         includeFilterFiles = new TreeMap<>();
         excludeFilterFiles = new TreeMap<>();
         excludeBugsFiles = new TreeMap<>();
+        externalAnnotationFiles = new TreeMap<>();
         customPlugins = new TreeMap<>();
     }
 
@@ -543,8 +546,19 @@ public class UserPreferences implements Cloneable {
         this.excludeFilterFiles = excludeFilterFiles;
     }
 
+    public void setExternalAnnotationFiles(Map<String, Boolean> externalAnnotationFiles) {
+        if (externalAnnotationFiles == null) {
+            throw new IllegalArgumentException("externalAnnotationFiles may not be null.");
+        }
+        this.externalAnnotationFiles = externalAnnotationFiles;
+    }
+
     public Map<String, Boolean> getExcludeFilterFiles() {
         return excludeFilterFiles;
+    }
+
+    public Map<String, Boolean> getExternalAnnotationFiles() {
+        return externalAnnotationFiles;
     }
 
     /**

@@ -217,6 +217,7 @@ public class TextUICommandLine extends FindBugsCommandLine {
         addSwitch("-auxclasspathFromInput", "read aux classpath from standard input");
         addOption("-auxclasspathFromFile", "filepath", "read aux classpaths from a designated file");
         addOption("-sourcepath", "source path", "set source path for analyzed classes");
+        addOption("-externalAnnotation", "filepath", "read additional annotations from a designated xml file");
         addSwitch("-exitcode", "set exit code of process");
         addSwitch("-noClassOk", "output empty warning file if no classes are specified");
         addSwitch("-xargs", "get list of classfiles/jarfiles from standard input rather than command line");
@@ -611,6 +612,8 @@ public class TextUICommandLine extends FindBugsCommandLine {
                 sourceDirs.add(new File(tok.nextToken()).getAbsolutePath());
             }
             project.addSourceDirs(sourceDirs);
+        } else if ("-externalAnnotation".equals(option)) {
+            project.getConfiguration().getExternalAnnotationFiles().put(argument, true);
         } else if ("-userPrefs".equals(option)) {
             UserPreferences prefs = UserPreferences.createDefaultUserPreferences();
             prefs.read(new FileInputStream(argument));

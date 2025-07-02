@@ -202,6 +202,7 @@ public class FindBugsWorker {
         userPrefs.setIncludeFilterFiles(relativeToAbsolute(userPrefs.getIncludeFilterFiles()));
         userPrefs.setExcludeFilterFiles(relativeToAbsolute(userPrefs.getExcludeFilterFiles()));
         userPrefs.setExcludeBugsFiles(relativeToAbsolute(userPrefs.getExcludeBugsFiles()));
+        userPrefs.setExternalAnnotationFiles(relativeToAbsolute(userPrefs.getExternalAnnotationFiles()));
         findBugs.setUserPreferences(userPrefs);
 
         // configure extended preferences

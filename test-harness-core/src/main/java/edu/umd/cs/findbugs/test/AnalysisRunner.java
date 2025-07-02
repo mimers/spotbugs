@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.jar.JarOutputStream;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 import javax.annotation.Nonnull;
@@ -51,6 +52,7 @@ import edu.umd.cs.findbugs.plugins.DuplicatePluginIdException;
 @ParametersAreNonnullByDefault
 public class AnalysisRunner {
     private final List<Path> auxClasspathEntries = new ArrayList<>();
+    private final List<Path> externalAnnotationFiles = new ArrayList<>();
 
     /**
      * SpotBugs stores relation between plugin-id and {@link Plugin} instance in a static field ({@code Plugin.allPlugins}),
@@ -81,6 +83,16 @@ public class AnalysisRunner {
             throw new IllegalArgumentException("Cannot read " + path.toAbsolutePath());
         }
         auxClasspathEntries.add(path);
+        return this;
+    }
+    
+    @Nonnull
+    public AnalysisRunner addExternalAnnotationFile(Path path) {
+        Objects.requireNonNull(path);
+        if (!path.toFile().canRead()) {
+            throw new IllegalArgumentException("Cannot read " + path.toAbsolutePath());
+        }
+        externalAnnotationFiles.add(path);
         return this;
     }
 
@@ -144,6 +156,8 @@ public class AnalysisRunner {
         for (Path file : files) {
             project.addFile(file.toAbsolutePath().toString());
         }
+        project.getConfiguration().setExternalAnnotationFiles(externalAnnotationFiles.stream()
+                .collect(Collectors.toMap(path -> path.toAbsolutePath().toString(), path -> true)));
         for (Path auxClasspathEntry : auxClasspathEntries) {
             project.addAuxClasspathEntry(auxClasspathEntry.toAbsolutePath().toString());
         }

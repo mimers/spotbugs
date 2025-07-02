@@ -117,6 +117,7 @@ public abstract class AbstractIntegrationTest {
      */
     protected void performAnalysis(@SlashedClassName final String... analyzeMe) {
         AnalysisRunner runner = new AnalysisRunner();
+        runner.addExternalAnnotationFile(getFindbugsTestCases().resolve("src/xml/annotations.xml"));
 
         final Path lib = getFindbugsTestCases().resolve("lib");
         try (DirectoryStream<Path> ds = Files.newDirectoryStream(lib, "*.jar")) {

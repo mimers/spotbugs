@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsAnnotation
+        xmlns="https://github.com/spotbugs/filter/4.8.4"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/spotbugs/filter/4.8.4 https://raw.githubusercontent.com/spotbugs/spotbugs/4.8.4/spotbugs/etc/findbugsannotation.xsd">
+    <Nullness>
+        <Class name="externalAnnotations.ExternalClassNullness" target="METHOD" annotation="CheckForNull"/>
+        <Class name="externalAnnotations.ExternalClassNullness">
+            <Method name="nonNullString" signature="()Ljava/lang/String;" annotation="Nonnull"/>
+        </Class>
+        <Class name="externalAnnotations.ExternalNullness">
+            <Method name="nullString" signature="()Ljava/lang/String;" annotation="CheckForNull"/>
+            <Field name="nullFiled" signature="Ljava/lang/String;" annotation="CheckForNull"/>
+            <Method name="nonNullString" signature="()Ljava/lang/String;" annotation="Nonnull"/>
+            <Field name="nonNullFiled" signature="Ljava/lang/String;" annotation="Nonnull"/>
+        </Class>
+    </Nullness>
+</FindBugsAnnotation>
